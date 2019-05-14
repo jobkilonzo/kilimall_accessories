@@ -1,4 +1,6 @@
 import scrapy
+from scrapy.loader import ItemLoader
+from kilimall.items import KilimallItem
 
 class KilimallSpider(scrapy.Spider):
     name="kilimall"
@@ -9,10 +11,11 @@ class KilimallSpider(scrapy.Spider):
 
     def parse(self, response):
         for accessories in response.xpath("//li[@class='item']"):
-            yield{
-                'name': accessories.xpath(".//h2[@class='goods-name']/a/text()").extract_first(),
-                'price': accessories.xpath(".//div[@class='goods-price']/em/text()").extract_first()
-            }
+
+            loader= ItemLoader(item=KilimallItem(), selector=accessories, response=response)
+            loader.add_xpath('name', ".//h2[@class='goods-name']/a/text()")
+            loader.add_xpath('price', ".//div[@class='goods-price']/em/text()")
+            yield loader.load_item()
 
             next_page= response.selector.xpath("//li/a[@class='demo']/@href").extract_first()
 
